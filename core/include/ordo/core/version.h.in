@@ -1,0 +1,18 @@
+#pragma once
+// ordo::core version info. Generated into version.h by CMake's
+// configure_file() at configure time -- the single source of truth is
+// project(ordo VERSION ...) in the root CMakeLists.txt. Edit that (and this
+// template), never the generated header sitting under the build tree's
+// generated/ordo/core/ directory.
+
+namespace ordo::core {
+
+inline constexpr int kVersionMajor = @PROJECT_VERSION_MAJOR@;
+inline constexpr int kVersionMinor = @PROJECT_VERSION_MINOR@;
+inline constexpr int kVersionPatch = @PROJECT_VERSION_PATCH@;
+inline constexpr const char* kVersionString = "@PROJECT_VERSION@";
+
+// Returns the current ordo::core version string, e.g. "0.1.0".
+const char* versionString();
+
+}  // namespace ordo::core
