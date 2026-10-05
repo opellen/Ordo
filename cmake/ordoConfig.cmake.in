@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+# Provides ordo::core and, if the package was built with ORDO_BUILD_QT=ON,
+# ordo::qt.
+
+include(CMakeFindDependencyMacro)
+
+include("${CMAKE_CURRENT_LIST_DIR}/ordoTargets.cmake")
+
+# Look for Qt6 only if this install exported ordo::qt.
+if(TARGET ordo::qt)
+    find_dependency(Qt6 REQUIRED COMPONENTS Core Widgets)
+endif()
+
+check_required_components(ordo)
