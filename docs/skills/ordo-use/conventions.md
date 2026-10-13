@@ -13,23 +13,20 @@ a directory listing alone reveals what domain it belongs to and what's in it:
 
 - `todo_events.h` — one feature's whole event vocabulary: its intents and the
   fact(s) they produce, together in one file (see
-  [`examples/todomvc/model/todo_events.h`](../../../examples/todomvc/model/todo_events.h)).
+  [patterns.md, Events](patterns.md#events)).
 - `persistence_events.h` — a second feature lane gets its own event file, not
-  a shared dumping ground (see
-  [`examples/todomvc/model/persistence_events.h`](../../../examples/todomvc/model/persistence_events.h)).
+  a shared dumping ground.
 - `todo_commands.h` / `persistence_commands.h` — commands grouped **by
-  cohesive family**, not one file per class. todomvc's seven per-intent
-  commands split into exactly two files along the same feature-lane boundary
-  as the events (see
-  [`examples/todomvc/controller/todo_commands.h`](../../../examples/todomvc/controller/todo_commands.h),
-  [`controller/persistence_commands.h`](../../../examples/todomvc/controller/persistence_commands.h)).
+  cohesive family**, not one file per class. ordo's todomvc example splits
+  its ten commands into exactly two files along the same feature-lane
+  boundary as the events (see [patterns.md, Command](patterns.md#command)).
 
 Rule of thumb: **the file name names the domain concept, not the ordo role.**
 `todo_events.h`, never `events.h`; `task_commands.h`, never `commands.h`.
 
 ## Directory layout
 
-Mirror `examples/todomvc/`'s split:
+The split ordo's todomvc example uses:
 
 ```
 model/        events, agents, plain domain types (todo.h, todo_events.h, todo_list.h)
@@ -53,8 +50,8 @@ it is still small.
 
 The composition root is **plain code, run once, in order** — there is no
 startup-command framework, no lifecycle hook to implement. See
-[`examples/todomvc/main.cpp`](../../../examples/todomvc/main.cpp)'s non-smoke
-branch for the canonical shape:
+[patterns.md, Bootstrap and teardown](patterns.md#bootstrap-and-teardown-viewmodel-shape)
+for the canonical shape in code:
 
 1. Construct `ordo::core::Kernel kernel;`.
 2. `kernel.registerAgent(...)` for every agent, before anything looks one up.
@@ -96,8 +93,7 @@ block, or a `ViewModel` shape's destructor block):
 1. **View layer first** — whichever side holds a pointer into the other dies
    first. A `Presenter` writes widgets, so destroy the adapter (host `clear()`
    or scope exit) while the widgets still exist; a `ViewModel` is read *by*
-   the view, so the window/QML engine dies first instead. See
-   [api.md, Lifetime & threading](../../api.md#lifetime--threading).
+   the view, so the window/QML engine dies first instead.
 2. **`removeCommand<EventT>()` for every registered command** whose captured
    dependency (a `std::ref` to a worker, a port, an adapter) is about to die.
    Command factory captures have no auto-cleanup, unlike subscriptions —
@@ -113,8 +109,8 @@ Cross-thread work is an application-level seam, not a framework feature: a
 worker computes off-thread, and every result crosses back through exactly one
 **relay** object whose queued delivery (`QMetaObject::invokeMethod(...,
 Qt::QueuedConnection)`) re-enters `kernel.send(...)` on the UI thread. The
-model is `DbRelay` in
-[`examples/todomvc/infra/db_worker.h`](../../../examples/todomvc/infra/db_worker.h):
+model is todomvc's `DbRelay` (see
+[patterns.md, Thread relay](patterns.md#thread-relay)):
 its `postLoaded`/`postPersistCompleted` are worker-thread-callable, and the
 `onLoaded`/`onPersistCompleted` sinks wired in `main.cpp` call `kernel.send`
 only once already back on the UI thread. Never call `kernel.send` (or touch
@@ -124,8 +120,7 @@ any agent/command/adapter) from a worker thread directly.
 
 **One kernel per document.** `Kernel` is instantiable, never a singleton —
 several kernels coexist sharing no dispatcher, no agents, no command
-registrations (see
-[usage-guide.md, Multi-Document Applications](../../usage-guide.md#multi-document-applications)).
+registrations.
 
 - Switching the active document means **destroying** that document's
   `ViewHost` and every adapter under it, then **building new ones** against
@@ -134,8 +129,8 @@ registrations (see
   `ViewHost` holds its kernel's `PresenterContext` as a reference member and
   is non-copyable/non-assignable, and `ViewAdapter::setContext` is gated by a
   `HostKey` passkey only `ViewHost::add()` can mint (see
-  [`qt/include/ordo/qt/view_adapter.h`](../../../qt/include/ordo/qt/view_adapter.h),
-  [`qt/include/ordo/qt/view_host.h`](../../../qt/include/ordo/qt/view_host.h)).
+  `qt/include/ordo/qt/view_adapter.h` and `qt/include/ordo/qt/view_host.h` in
+  the ordo source).
   There is no expressible way to point an adapter at a second kernel.
 - Anything that spans documents (a document list, "close all") lives above
   both kernels in the composition root — it reads one kernel and sends an

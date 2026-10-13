@@ -414,7 +414,7 @@ ones. Never edit the generated copy.
 inline constexpr int kVersionMajor = 0;   // PROJECT_VERSION_MAJOR
 inline constexpr int kVersionMinor = 1;   // PROJECT_VERSION_MINOR
 inline constexpr int kVersionPatch = 0;   // PROJECT_VERSION_PATCH
-inline constexpr const char* kVersionString = "0.1.0";   // PROJECT_VERSION
+inline constexpr const char* kVersionString = "0.1.1";   // PROJECT_VERSION
 
 const char* versionString();
 ```

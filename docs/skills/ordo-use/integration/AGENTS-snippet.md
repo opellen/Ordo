@@ -41,12 +41,16 @@ When working on Ordo code, read and follow:
 Replace `<path-to-ordo>` with the actual relative or absolute path to your
 ordo checkout (e.g. `third_party/ordo` or `../ordo`).
 
+If you vendor only part of ordo (say `core/`, `qt/` and the build files),
+keep `docs/skills/ordo-use/` in the snapshot. The skill is self-contained: it
+needs nothing else from `docs/` or `examples/`.
+
 ### Installed-package consumers
 
 `find_package(ordo CONFIG)` installs the libraries and headers, not the docs
 tree — there is no source checkout to point at. Take the skill from the ordo
 repo directly (clone it, or browse it on the project's remote) and vendor or
-link the same three files from there instead.
+link the `docs/skills/ordo-use/` directory from there instead.
 
 ---
 

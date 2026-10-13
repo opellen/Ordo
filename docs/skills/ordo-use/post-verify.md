@@ -12,10 +12,10 @@ command, or adapter wiring.
 
 ## 1. A `--smoke` headless self-check exists and passes
 
-Every worked example ships a `--smoke` flag that drives the feature's whole
-loop with no window shown and exits non-zero on failure — see
-[`examples/todomvc/smoke.cpp`](../../../examples/todomvc/smoke.cpp)'s
-`runSmoke()`/`runScenario()` for the pattern: construct the kernel, send
+An ordo app ships a `--smoke` flag that drives the feature's whole loop with
+no window shown and exits non-zero on failure — see
+[patterns.md, `--smoke` self-check](patterns.md#--smoke-self-check) for the
+pattern: construct the kernel, send
 intents the same way a button press would, assert on what the agent (or a
 view-model reading it) ended up holding, `fprintf(stderr, "FAIL: ...")` and
 return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
@@ -24,8 +24,7 @@ return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
 - [ ] It asserts on **observable state** (agent data, view-model properties),
       not on log output.
 - [ ] It runs with no `QApplication` window shown — a `QCoreApplication` or
-      `QGuiApplication` is enough unless real widgets/QML are under test (see
-      [usage-guide.md, Testing Your Feature](../../usage-guide.md#testing-your-feature)).
+      `QGuiApplication` is enough unless real widgets/QML are under test.
       A smoke that grows phases incrementally may keep early phases
       application-free and construct a phase-local `QApplication` only inside
       the first widget-touching phase — declare it first in that phase so it
@@ -50,8 +49,8 @@ return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
 - [ ] For each `kernel.registerCommand<EventT, CommandT>(...)` in bootstrap,
       there is a `kernel.removeCommand<EventT>()` in the teardown block —
       match them one for one, the way
-      [`examples/todomvc/wiring.cpp`](../../../examples/todomvc/wiring.cpp) pairs
-      every `registerCommand` with a `removeCommand`.
+      [patterns.md, Wiring](patterns.md#wiring-register-and-remove-as-a-pair)
+      pairs every `registerCommand` with a `removeCommand`.
 - [ ] This matters most for commands registered with a `std::ref(...)`
       dependency: command factory captures have **no** auto-cleanup (unlike
       subscriptions), so a missing `removeCommand` before the referent's
@@ -62,8 +61,8 @@ return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
 ## 4. Adapters subscribe only through `ViewAdapter::subscribe`
 
 - [ ] Every `Presenter`/`ViewModel` subscription goes through the protected
-      `subscribe<EventT>(...)` inherited from
-      [`ViewAdapter`](../../../qt/include/ordo/qt/view_adapter.h) — either the
+      `subscribe<EventT>(...)` inherited from `ViewAdapter`
+      (`qt/include/ordo/qt/view_adapter.h`) — either the
       member-function overload (`subscribe<events::X>(&Self::onX)`) or the
       `std::function` overload. Never a hand-rolled call into
       `PresenterContext::subscribe` or `Dispatcher::subscribe` with a
@@ -80,8 +79,9 @@ return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
 - [ ] Any command constructor taking a reference dependency (a worker, an
       output port) is registered as
       `kernel.registerCommand<EventT, CommandT>(std::ref(dependency))` — see
-      [`examples/todomvc/wiring.cpp`](../../../examples/todomvc/wiring.cpp)'s
-      `std::ref(dbWorker)` calls — never by value (which would copy or fail to
+      the `std::ref(dbWorker)` calls in
+      [patterns.md, Wiring](patterns.md#wiring-register-and-remove-as-a-pair) —
+      never by value (which would copy or fail to
       compile) and never a raw pointer smuggled through a value parameter.
 - [ ] The referent (`dbWorker`, a view-model used as an output port) is
       declared with a lifetime that **outlives** the registration — confirmed
@@ -94,5 +94,4 @@ return 1 on mismatch, `printf("PASS: ...")` and return 0 otherwise.
 - [ ] Any repo-level unit tests that exercise the changed agents/commands
       pass — a test builds its own `Kernel`, registers only the agents it
       needs, sends an intent, asserts on the agent and on any output port
-      recording (see
-      [usage-guide.md, Testing Your Feature](../../usage-guide.md#testing-your-feature)).
+      recording (see [patterns.md, Unit test](patterns.md#unit-test-illustrative)).
