@@ -28,6 +28,12 @@ foreach(name version dispatcher agent command kernel)
     gtest_discover_tests(ordo_${name}_test)
 endforeach()
 
+# Two TUs each define an anonymous-namespace `Ping`; the event key must tell them apart.
+add_executable(ordo_event_identity_test
+    event_identity_test.cpp event_identity_a.cpp event_identity_b.cpp)
+target_link_libraries(ordo_event_identity_test PRIVATE ordo_core GTest::gtest_main)
+gtest_discover_tests(ordo_event_identity_test)
+
 if(ORDO_BUILD_QT)
     set(CMAKE_AUTOMOC ON)  # view_model_test.cpp defines a Q_OBJECT class
     add_executable(ordo_presenter_test presenter_test.cpp)

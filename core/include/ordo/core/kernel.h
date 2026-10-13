@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
 
@@ -84,7 +85,7 @@ private:
     // factory (a plain `this` would remove every subscription).
     template <typename EventT>
     const void* commandOwner() {
-        return &commandOwnerTokens_[typeid(EventT).hash_code()];
+        return &commandOwnerTokens_[std::type_index(typeid(EventT))];
     }
 
     Dispatcher dispatcher_;
@@ -93,7 +94,7 @@ private:
     CommandContext commandContext_;
     PresenterContext presenterContext_;
     std::unordered_map<std::string, std::shared_ptr<Agent>> agents_;
-    std::unordered_map<std::size_t, int> commandOwnerTokens_;
+    std::unordered_map<std::type_index, int> commandOwnerTokens_;
 };
 
 }  // namespace ordo::core

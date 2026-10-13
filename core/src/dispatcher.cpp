@@ -5,8 +5,8 @@
 namespace ordo::core {
 
 void Dispatcher::unsubscribe(const void* owner) {
-    for (auto& [hash, entries] : handlers_) {
-        (void)hash;
+    for (auto& [type, entries] : handlers_) {
+        (void)type;
         entries.erase(std::remove_if(entries.begin(), entries.end(),
                                       [owner](const Entry& entry) { return entry.owner == owner; }),
                       entries.end());

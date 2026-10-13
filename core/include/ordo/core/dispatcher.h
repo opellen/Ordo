@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <string_view>
+#include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
 #include <vector>
@@ -36,7 +37,7 @@ public:
         auto trampoline = [handler = std::move(handler)](const void* event) {
             handler(*static_cast<const EventT*>(event));
         };
-        handlers_[typeid(EventT).hash_code()].push_back(Entry{owner, id, std::move(trampoline)});
+        handlers_[std::type_index(typeid(EventT))].push_back(Entry{owner, id, std::move(trampoline)});
         return id;
     }
 
@@ -52,12 +53,12 @@ public:
     // skipped. The observer sees every dispatch, zero-subscriber ones included.
     template <typename EventT>
     void dispatch(const EventT& event) {
-        const std::size_t hash = typeid(EventT).hash_code();
-        auto it = handlers_.find(hash);
+        const std::type_index key(typeid(EventT));
+        auto it = handlers_.find(key);
 
         if (observer_) {
             DispatchRecord record;
-            record.typeHash = hash;
+            record.typeHash = typeid(EventT).hash_code();
             record.subscriberCount = (it != handlers_.end()) ? it->second.size() : 0;
             if constexpr (requires { EventT::eventName; }) {
                 record.eventName = EventT::eventName;
@@ -71,7 +72,7 @@ public:
         const std::vector<Entry> snapshot = it->second;
 
         for (const Entry& entry : snapshot) {
-            const std::vector<Entry>& live = handlers_[hash];
+            const std::vector<Entry>& live = handlers_[key];
             const bool stillSubscribed =
                 std::any_of(live.begin(), live.end(), [&entry](const Entry& e) { return e.id == entry.id; });
             if (stillSubscribed) {
@@ -87,7 +88,7 @@ private:
         std::function<void(const void*)> trampoline;
     };
 
-    std::unordered_map<std::size_t, std::vector<Entry>> handlers_;
+    std::unordered_map<std::type_index, std::vector<Entry>> handlers_;
     SubscriptionId nextId_ = 1;
     std::function<void(const DispatchRecord&)> observer_;
 };

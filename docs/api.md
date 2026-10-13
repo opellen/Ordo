@@ -107,14 +107,17 @@ kernel.removeCommand<app::events::AddTaskRequested>();
 ### Typed events
 
 An event is a concept, not a class: any plain struct works. The **struct type
-is the event identity** (`typeid(EventT).hash_code()` keys the bus) and its
-members are the payload. No base class, no macro, no registration step —
+is the event identity** (`std::type_index(typeid(EventT))` keys the bus, so
+two distinct types never share a slot, even same-named ones in different
+anonymous namespaces) and its members are the payload. No base class, no macro, no registration step —
 `subscribe<EventT>` and `dispatch<EventT>` name the type directly, so a typo
 is a compile error rather than a silently unrouted string.
 
 Optional tracing hook: if the struct has a static `eventName` member, the
 dispatcher copies it into `DispatchRecord::eventName`; without it the record
-carries an empty name and the type hash only.
+carries an empty name and the type hash only. `typeHash` is
+`typeid(EventT).hash_code()`, informational and not unique per type; the
+dispatcher never keys on it.
 
 ```cpp
 namespace app::events {
@@ -414,7 +417,7 @@ ones. Never edit the generated copy.
 inline constexpr int kVersionMajor = 0;   // PROJECT_VERSION_MAJOR
 inline constexpr int kVersionMinor = 1;   // PROJECT_VERSION_MINOR
 inline constexpr int kVersionPatch = 0;   // PROJECT_VERSION_PATCH
-inline constexpr const char* kVersionString = "0.1.1";   // PROJECT_VERSION
+inline constexpr const char* kVersionString = "0.1.2";   // PROJECT_VERSION
 
 const char* versionString();
 ```

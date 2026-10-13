@@ -214,7 +214,7 @@ No install step, no network. Details under [Embedding](#embedding).
 
 ```
 include(FetchContent)
-FetchContent_Declare(ordo GIT_REPOSITORY https://github.com/opellen/Ordo.git GIT_TAG v0.1.1)
+FetchContent_Declare(ordo GIT_REPOSITORY https://github.com/opellen/Ordo.git GIT_TAG v0.1.2)
 FetchContent_MakeAvailable(ordo)
 target_link_libraries(my_app PRIVATE ordo::core ordo::qt)
 ```
